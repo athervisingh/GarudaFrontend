@@ -1,19 +1,27 @@
 <template>
-  <router-view />
+  <div>
+    <HeaderComponent />
+    
+    <main>
+      <router-view />
+    </main>
+    
+    <FooterComponent />
+  </div>
 </template>
 
-<script setup lang="ts">
-import { onMounted } from 'vue'
-import { TempStore } from './utils/TempStore'
-import { UserService } from './services/UserServices'
+<script>
+import HeaderComponent from './components/HeaderComponent.vue'
+import FooterComponent from './components/FooterComponent.vue'
 
-onMounted(async () => {
-  const user = await UserService.fetchCurrentUser()
-  if (user) {
-    TempStore.setUser(user)
-    console.log('✅ Logged-in user:', user.getUserId(), user.getRole())
-  } else {
-    console.warn('⚠️ Could not fetch user')
+export default {
+  components: {
+    HeaderComponent,
+    FooterComponent
   }
-})
+}
 </script>
+
+<style>
+/* Optional: Global styles */
+</style>
