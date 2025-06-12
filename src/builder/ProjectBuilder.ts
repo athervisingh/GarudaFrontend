@@ -1,6 +1,6 @@
 import { BasicInfo } from "../models/BasicInfo";
 import { AOI } from "../models/AOI";
-import { Project } from "../models/Poject";
+// import { Project } from "../models/Poject";
 
 export class ProjectBuilder {
   _basicInfo?: BasicInfo;
@@ -18,7 +18,6 @@ export class ProjectBuilder {
     return this;
   }
 
-  // 👇 Add new AOI to list instead of overwriting
   addAOI(geoentitySourceId: string, featureName: string, geom: string): this {
     const aoi = new AOI(geoentitySourceId, featureName, geom);
     this._aois.push(aoi);
@@ -32,7 +31,7 @@ export class ProjectBuilder {
     return this;
   }
 
-  build(): Project {
-    return new Project(this);
-  }
+  // build(): Project {
+  //   return new Project(this);
+  // }
 }

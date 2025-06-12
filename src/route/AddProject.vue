@@ -58,7 +58,7 @@
         </button>
 
         <button class="w-full py-4 px-6 rounded-2xl bg-white text-gray-800 hover:bg-gray-50 border border-gray-300 font-semibold flex items-center gap-4 transition-all duration-300 shadow-md transform hover:scale-105 active:scale-95">
-          <img src="/images/User.webp" class="w-9 h-8" />
+          <img src="/images/User.png" class="w-6 h-6" />
           <span class="flex-1 text-left text-base">Add Users</span>
         </button>
       </div>

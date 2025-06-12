@@ -1,15 +1,15 @@
 import type { BasicInfo } from '../models/BasicInfo'
-import type { Project } from '../models/Poject'
+// import type { Project } from '../models/Poject'
 import type { AOI } from '../models/AOI'
 
 export class ProjectApi {
-  static async saveProject(project: Project): Promise<Response> {
-    return await fetch('http://localhost:3000/api/projects', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify(project)
-    })
-  }
+  // static async saveProject(project: Project): Promise<Response> {
+  //   return await fetch('http://localhost:3000/api/projects', {
+  //     method: 'POST',
+  //     headers: { 'Content-Type': 'application/json' },
+  //     body: JSON.stringify(project)
+  //   })
+  // }
 
   static async sendBasicInfoAndGetGeoentitySourceId(basicInfo: BasicInfo): Promise<{ geoentitySourceId: string }> {
     console.log('Sending basic info to backend:', basicInfo.toJSON())

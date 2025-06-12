@@ -1,6 +1,6 @@
 import { ProjectBuilder } from '../builder/ProjectBuilder'
 import { ProjectApi } from '../api/ProjectApi'
-import type { Project } from '../models/Poject'
+// import type { Project } from '../models/Poject'
 
 export class ProjectService {
   private static builder = new ProjectBuilder()
@@ -46,7 +46,6 @@ export class ProjectService {
   }
 
   const geoIds = await response.json() 
-console.log('Received geoIds:', geoIds)
 
   for (const { name, geoentityId } of geoIds) {
     const aoi = this.builder._aois.find(a => a.featureName === name)
@@ -56,9 +55,9 @@ console.log('Received geoIds:', geoIds)
   }
 }
 
-  static buildFinalProject(): Project {
-    return this.builder.build()
-  }
+  // static buildFinalProject(): Project {
+  //   return this.builder.build()
+  // }
 
   // static async submitProjectToBackend(): Promise<void> {
   //   const project = this.buildFinalProject()
@@ -69,7 +68,6 @@ console.log('Received geoIds:', geoIds)
   //     throw new Error(`Failed to submit project: ${error}`)
   //   }
   // }
-
 
   static getAOIGeoentityIds(): { name: string; geoentityId: string }[] {
   return this.builder._aois.map(aoi => ({
