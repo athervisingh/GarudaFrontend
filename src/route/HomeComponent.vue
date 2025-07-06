@@ -69,8 +69,10 @@
 </template>
 
 <script setup lang="ts">
+import controller from '../classes/Controller';
 import { ref, onMounted } from "vue";
 import { useRouter } from "vue-router";
+
 
 const router = useRouter();
 const showSplash = ref(true);
@@ -88,6 +90,7 @@ onMounted(() => {
 });
 
 function goToAddProject() {
+  controller.initializeProject(); // ✅ call the method
   router.push("/add-project");
 }
 

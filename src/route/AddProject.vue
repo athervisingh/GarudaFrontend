@@ -9,16 +9,11 @@
     <div class="flex-1 flex flex-col items-center justify-center p-6">
       <!-- Stepper Buttons -->
       <div class="w-full max-w-md space-y-4">
-        <div v-for="(step, index) in steps" :key="step.id" class="relative">
+        <div v-for="step in steps" :key="step.id" class="relative">
           <button
             @click="handleStepClick(step.id)"
             :disabled="isCompleted(step.id)"
-            :class="[
-              'w-full py-4 px-6 rounded-2xl border font-semibold flex items-center gap-4 transition-all duration-300 shadow-md transform',
-              isCompleted(step.id)
-                ? 'bg-green-500 text-white border-black cursor-not-allowed '
-                : 'bg-white hover:bg-gray-50 text-gray-800 border border-gray-200 hover:scale-105 active:scale-95',
-            ]"
+            :class="buttonClass(step.id)"
           >
             <div class="flex-shrink-0 w-8 h-8 flex items-center justify-center">
               <svg
@@ -28,7 +23,12 @@
                 stroke="currentColor"
                 viewBox="0 0 24 24"
               >
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7" />
+                <path
+                  stroke-linecap="round"
+                  stroke-linejoin="round"
+                  stroke-width="2"
+                  d="M5 13l4 4L19 7"
+                />
               </svg>
               <img
                 v-else
@@ -38,136 +38,123 @@
               />
             </div>
             <span class="flex-1 text-left text-base">{{ step.title }}</span>
-            <div
-              :class="[
-                'w-6 h-6 rounded-full flex items-center justify-center text-xs font-bold',
-                isCompleted(step.id) ? 'bg-green-600 text-white' : 'bg-gray-200 text-gray-600',
-              ]"
-            >
-              {{ isCompleted(step.id) ? '✓' : '' }}
+            <div :class="badgeClass(step.id)">
+              {{ isCompleted(step.id) ? "✓" : "" }}
             </div>
           </button>
         </div>
+
+        <!-- Submit Button -->
+        <div class="pt-6 flex justify-center">
+          <button
+            @click="handleSubmit"
+            :disabled="!allStepsCompleted"
+            :class="submitButtonClass"
+          >
+            SUBMIT
+          </button>
+        </div>
       </div>
-
-      <!-- Extra Buttons -->
-      <div class="w-full max-w-md space-y-4 mt-6">
-        <button class="w-full py-4 px-6 rounded-2xl bg-white text-gray-800 hover:bg-gray-50 border border-gray-300 font-semibold flex items-center gap-4 transition-all duration-300 shadow-md transform hover:scale-105 active:scale-95">
-          <img src="/images/config.png" class="w-6 h-6" />
-          <span class="flex-1 text-left text-base">Configure AOI Watch</span>
-        </button>
-
-        <button class="w-full py-4 px-6 rounded-2xl bg-white text-gray-800 hover:bg-gray-50 border border-gray-300 font-semibold flex items-center gap-4 transition-all duration-300 shadow-md transform hover:scale-105 active:scale-95">
-          <img src="/images/User.png" class="w-6 h-6" />
-          <span class="flex-1 text-left text-base">Add Users</span>
-        </button>
-      </div>
-
-      <!-- Submit -->
-      <button
-        @click="handleSubmit"
-        :disabled="completedSteps.size !== steps.length"
-        :class="[
-          'mt-8 px-8 py-3 rounded-lg font-bold text-white transition-all duration-300 shadow-lg transform hover:scale-105',
-          completedSteps.size === steps.length
-            ? 'bg-green-500 hover:bg-green-600 cursor-pointer'
-            : 'bg-gray-400 cursor-not-allowed opacity-50',
-        ]"
-      >
-        SUBMIT
-      </button>
     </div>
 
-    <!-- Project Basic Info Popup -->
-    <div v-if="showPopup" class="fixed inset-0 z-50 bg-black bg-opacity-50 flex items-center justify-center">
+    <!-- Step 0 Modal -->
+    <div
+      v-if="showPopup"
+      class="fixed inset-0 z-50 bg-black bg-opacity-50 flex items-center justify-center"
+    >
       <ProjectBasicInfoPopup
-        v-if="showPopup"
         @next="closePopupAndComplete"
-        @cancel="showPopup = false"
+        @cancel="() => (showPopup = false)"
       />
     </div>
   </div>
 </template>
 
 <script setup lang="ts">
-import { ref, reactive, onMounted } from 'vue'
-import { useRouter, useRoute } from 'vue-router'
-import ProjectBasicInfoPopup from '../components/steps/ProjectBasicInfoPopup.vue'
-import { ProjectService } from '../services/ProjectServices'
+import { ref, onMounted, onBeforeUnmount, computed } from "vue";
+import { useRouter } from "vue-router";
+import ProjectBasicInfoPopup from "../components/steps/ProjectBasicInfoPopup.vue";
+import { stepTrackerService } from "../services/stepTrackerService";
+import { Subscription } from "rxjs";
+import controller from "../classes/Controller";
 
-// Router and popup state
-const router = useRouter()
-const route = useRoute()
-const showPopup = ref(false)
+const router = useRouter();
+const showPopup = ref(false);
+const completedSteps = ref(new Set<number>());
+let subscription: Subscription;
 
-// Step tracking
-const completedSteps = reactive(new Set<number>())
 const steps = [
-  { id: 0, title: 'Project Basic Info', icon: '/images/info.png' },
-  { id: 1, title: 'Define AOI', icon: '/images/defineAoi.png' },
-]
+  { id: 0, title: "Project Basic Info", icon: "/images/info.png" },
+  { id: 1, title: "Define AOI", icon: "/images/defineAoi.png" },
+  { id: 2, title: "Configure AOI Watch", icon: "/images/config.png" },
+  { id: 3, title: "Add Users", icon: "/images/User.png" },
+];
 
-// Restore step completion from query parameters
 onMounted(() => {
-  const basicInfoCompleted = route.query.basicInfoCompleted === 'true'
-  const aoiCompleted = route.query.aoiCompleted === 'true'
+  subscription = stepTrackerService.step$.subscribe((val) => {
+    completedSteps.value = val;
+  });
+});
 
-  if (basicInfoCompleted) completedSteps.add(0)
-  if (aoiCompleted) completedSteps.add(1)
-})
+onBeforeUnmount(() => {
+  subscription?.unsubscribe();
+});
 
-// Check if step is completed
-const isCompleted = (stepId: number) => completedSteps.has(stepId)
+const isCompleted = (stepId: number) => completedSteps.value.has(stepId);
 
-// Handle step clicks — disable completed ones
+const allStepsCompleted = computed(() => {
+  return steps.every(step => isCompleted(step.id));
+});
+
 const handleStepClick = (stepId: number) => {
-  if (isCompleted(stepId)) return
+  if (isCompleted(stepId)) return;
 
-  if (stepId === 0) {
-    showPopup.value = true
-  } else if (stepId === 1) {
-    router.push({
-      path: '/define-aoi-map',
-      query: {
-        basicInfoCompleted: route.query.basicInfoCompleted || 'true',
-      },
-    })
+  switch (stepId) {
+    case 0:
+      showPopup.value = true;
+      break;
+    case 1:
+      controller.mapInitialize();
+      router.push("/define-aoi-map");
+      break;
+    case 2:
+      controller.buildFinalProject();
+      stepTrackerService.completeStep(2);
+      // router.push("/configure-aoi-watch");
+      break;
+    case 3:
+      router.push("/add-users");
+      break;
   }
-}
+};
 
-// When project basic info is completed
 const closePopupAndComplete = () => {
-  showPopup.value = false
-  completedSteps.add(0)
-  router.replace({
-    path: route.path,
-    query: {
-      ...route.query,
-      basicInfoCompleted: 'true',
-    },
-  })
-}
+  showPopup.value = false;
+  stepTrackerService.completeStep(0);
+};
 
-// Final submit logic
-const handleSubmit = async () => {
-  if (completedSteps.size !== steps.length) {
-    alert('⚠️ Please complete all steps before submitting.')
-    return
-  }
+const handleSubmit = () => {
+  router.push("/");
+};
 
-  try {
-    // Get AOI geoentity IDs from ProjectService
-    const geoIds = ProjectService.getAOIGeoentityIds()
+const buttonClass = (id: number) => [
+  "w-full py-4 px-6 rounded-2xl border font-semibold flex items-center gap-4 transition-all duration-300 shadow-md transform",
+  isCompleted(id)
+    ? "bg-green-500 text-white border-black cursor-not-allowed"
+    : "bg-white hover:bg-gray-50 text-gray-800 border border-gray-200 hover:scale-105 active:scale-95",
+];
 
-    // Show in alert
-    const message = geoIds
-      .map(a => `✔️ ${a.name}: ${a.geoentityId}`)
-      .join('\n')
-    alert(`✅ Geoentity IDs:\n\n${message}`)
+const badgeClass = (id: number) => [
+  "w-6 h-6 rounded-full flex items-center justify-center text-xs font-bold",
+  isCompleted(id) ? "bg-green-600 text-white" : "bg-gray-200 text-gray-600",
+];
 
-    alert('✅ Project submitted successfully!')
-  } catch (error: any) {
-    alert(`❌ Error while submitting project:\n${error.message}`)
-  }
-}
+const submitButtonClass = computed(() => [
+  "px-12 py-3 rounded-full font-bold text-lg shadow-lg transition-all duration-200 transform",
+  allStepsCompleted.value
+    ? "bg-gradient-to-b from-green-400 to-green-600 text-white hover:from-green-500 hover:to-green-700 hover:scale-105 active:scale-95 cursor-pointer"
+    : "bg-gray-300 text-gray-500 cursor-not-allowed"
+]);
 </script>
+
+<style scoped></style>

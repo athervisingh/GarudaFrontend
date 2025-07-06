@@ -106,16 +106,13 @@ import VectorSource from "ol/source/Vector";
 import { Draw } from "ol/interaction";
 import { Fill, Stroke, Style, Circle as CircleStyle } from "ol/style";
 import Polygon from "ol/geom/Polygon";
-
+import controller from "../classes/Controller";
 import WKT from "ol/format/WKT";
-import { ProjectService } from "../services/ProjectServices";
-
+import { stepTrackerService } from "../services/stepTrackerService"; 
 // Import Popup
 import DefineAOIPopup from "../components/steps/DefineAOIPopup.vue";
 
-const emit = defineEmits<{
-  (e: "completed"): void;
-}>();
+const emit = defineEmits(['next'])
 
 const router = useRouter();
 
@@ -212,11 +209,11 @@ onMounted(async () => {
 
     // ✅ Service calls
     try {
-      ProjectService.addAOI(name, wkt);
+      controller.setAOI(name, wkt);
 
       if (Object.keys(aux).length > 0) {
         for (const [key, value] of Object.entries(aux)) {
-          ProjectService.addAOIAuxField(key, value);
+          controller.setAOIAuxField(key, value);
         }
       }
     } catch (error) {
@@ -267,16 +264,11 @@ async function handleSubmit() {
   isSubmitting.value = true;
 
   try {
-    await ProjectService.submitAOIsToBackend();
+    await controller.submitAOIsAndGetAOIIDs();
 
-    emit("completed"); // mark step complete
-    router.push({
-      path: "/add-project",
-      query: {
-        basicInfoCompleted: "true",
-        aoiCompleted: "true",
-      },
-    });
+    stepTrackerService.completeStep(1); // ✅ Directly mark step as completed
+
+    router.push("/add-project"); // ✅ clean redirect, no query
   } catch (error) {
     console.error("Error submitting AOIs:", error);
     alert("❌ Failed to submit AOIs. Check console for details.");

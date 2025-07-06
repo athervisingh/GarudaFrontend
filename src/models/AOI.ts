@@ -1,22 +1,22 @@
 export class AOI {
-  private _geoentityId: string = ''
-  private _geoentitySourceId: string
+  private _aoiID: string = ''
+  private _projectID: string
   private _featureName: string
   private _geom: string
   private _auxData: Record<string, any> = {}
 
-  constructor(geoentitySourceId: string, featureName: string, geom: string) {
-    this._geoentitySourceId = geoentitySourceId
+  constructor(projectID: string, featureName: string, geom: string) {
+    this._projectID = projectID
     this._featureName = featureName
     this._geom = geom
   }
 
-  get geoentityId(): string {
-    return this._geoentityId
+  get aoiID(): string {
+    return this._aoiID
   }
 
-  get geoentitySourceId(): string {
-    return this._geoentitySourceId
+  get projectID(): string {
+    return this._projectID
   }
 
   get featureName(): string {
@@ -31,12 +31,12 @@ export class AOI {
     return this._auxData
   }
 
-  set geoentityId(id: string) {
-    this._geoentityId = id
+  setAOIID(id: string) {
+    this._aoiID = id
   }
 
-  set geoentitySourceId(sourceId: string) {
-    this._geoentitySourceId = sourceId
+  set projectID(sourceId: string) {
+    this._projectID = sourceId
   }
 
   set featureName(name: string) {
@@ -51,14 +51,14 @@ export class AOI {
     this._auxData = { ...data }
   }
 
-  addAuxField(key: string, value: any) {
+  setAuxField(key: string, value: any) {
     this._auxData[key] = value
   }
 
   toJSON(): object {
     return {
-      geoentityId: this._geoentityId,
-      geoentitySourceId: this._geoentitySourceId,
+      aoiId: this._aoiID,
+      projectID: this._projectID,
       featureName: this._featureName,
       geom: this._geom,
       auxData: this._auxData
