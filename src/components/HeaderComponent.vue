@@ -1,13 +1,26 @@
 <script setup lang="ts">
-import { ArrowLeft, Bell } from 'lucide-vue-next';
-import { useRouter } from 'vue-router';
-import controller from '../classes/Controller'; // ✅ direct controller import
+import { ArrowLeft, Bell } from "lucide-vue-next";
+import { ref, onMounted, onBeforeUnmount } from "vue";
+import navigationService from "../services/navigationService";
+import controller from "../classes/Controller";
+import { Subscription } from "rxjs";
 
-const router = useRouter();
+const canGoBack = ref(navigationService.canGoBack());
+let navSub: Subscription;
 
 const goBack = () => {
-  router.back();
+  navigationService.goBack();
 };
+
+onMounted(() => {
+  navSub = navigationService.currentView$.subscribe(() => {
+    canGoBack.value = navigationService.canGoBack();
+  });
+});
+
+onBeforeUnmount(() => {
+  navSub?.unsubscribe();
+});
 </script>
 
 <template>
@@ -17,26 +30,30 @@ const goBack = () => {
   >
     <!-- Left -->
     <div class="flex items-center ml-5">
-      <button 
+      <button
+        v-if="canGoBack && navigationService.getCurrentView() !== 'home'"
         @click="goBack"
         class="mr-3 p-2 hover:bg-gray-100 rounded-full transition-colors duration-200 hover:scale-105"
       >
         <ArrowLeft class="h-6 w-6 text-black" />
       </button>
+
       <img src="/images/logo.png" alt="Garuda Logo" class="h-10 sm:h-12" />
     </div>
 
     <!-- Right -->
     <div class="flex items-center space-x-4 mr-5 mt-1">
-      <!-- Notification Icon -->
       <div class="relative cursor-pointer hover:scale-105 transition-transform">
         <Bell class="h-7 w-7 text-black" />
-        <span class="absolute -top-2 -right-2 bg-red-600 text-white text-xs font-bold rounded-full px-1.5">23</span>
+        <span
+          class="absolute -top-2 -right-2 bg-red-600 text-white text-xs font-bold rounded-full px-1.5"
+          >23</span
+        >
       </div>
-
-      <!-- Profile Icon + Name -->
       <div class="flex items-center space-x-2">
-        <div class="cursor-pointer hover:ring-2 ring-blue-400 rounded-full transition-shadow">
+        <div
+          class="cursor-pointer hover:ring-2 ring-blue-400 rounded-full transition-shadow"
+        >
           <img
             :src="controller.getUserProfilePicture()"
             :alt="controller.getUserName()"

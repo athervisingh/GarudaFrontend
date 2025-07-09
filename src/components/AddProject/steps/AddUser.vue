@@ -5,43 +5,37 @@
     >
       <!-- ❌ Close Button -->
       <button
-        @click="emit('cancel')"
+        @click="close"
         class="absolute top-2 right-2 text-white hover:text-red-400 transition-all"
       >
-        <X class="w-6 h-6" />
+        <svg
+          xmlns="http://www.w3.org/2000/svg"
+          class="w-6 h-6"
+          fill="none"
+          viewBox="0 0 24 24"
+          stroke="currentColor"
+        >
+          <path
+            stroke-linecap="round"
+            stroke-linejoin="round"
+            stroke-width="2"
+            d="M6 18L18 6M6 6l12 12"
+          />
+        </svg>
       </button>
 
       <!-- 🟡 Title -->
       <h2 class="text-center text-yellow-300 font-bold text-xl mb-6">
-        Add User
+        Add Users
       </h2>
 
-      <!-- ➕ Add User Button -->
-      <div class="flex justify-between items-center mb-4">
-        <button
-          @click="toggleForm"
-          class="bg-white text-blue-500 hover:bg-blue-100 font-semibold py-2 px-4 rounded-full transition-all"
-        >
-          {{ showForm ? "➖ Close" : "➕ Add User" }}
-        </button>
-      </div>
-
       <!-- 👤 Input Form -->
-      <div v-if="showForm" class="space-y-4 mb-4">
+      <div class="space-y-4 mb-4">
         <div>
           <label class="block font-medium mb-1">VEDAS User ID</label>
           <input
             v-model="userId"
             placeholder="Enter VEDAS User ID"
-            class="input"
-          />
-        </div>
-
-        <div>
-          <label class="block font-medium mb-1">User Name</label>
-          <input
-            v-model="userName"
-            placeholder="Enter User Name"
             class="input"
           />
         </div>
@@ -55,13 +49,16 @@
           </select>
         </div>
 
-        <!-- ✅ Submit Single User -->
-        <button
-          @click="handleAdd"
-          class="bg-gradient-to-b from-green-400 to-green-600 text-white font-bold py-2 rounded-full w-full hover:scale-105 transition-transform"
-        >
-          Submit
-        </button>
+        <!-- ➕ Add User Button -->
+        <div class="flex justify-center mt-4">
+          <button
+            @click="handleAdd"
+            :disabled="!userId || !role"
+            class="w-full lg:w-48 justify-center py-2 rounded-full font-semibold transition-all duration-200 text-white disabled:bg-gray-500 disabled:cursor-not-allowed bg-blue-600 hover:bg-blue-700 hover:scale-105"
+          >
+            ➕ Add User
+          </button>
+        </div>
       </div>
 
       <!-- 🧾 User Table -->
@@ -70,7 +67,6 @@
           <thead>
             <tr class="text-yellow-300 border-b border-gray-500">
               <th class="py-1 text-left">UserID</th>
-              <th class="py-1 text-left">Username</th>
               <th class="py-1 text-left">Role</th>
             </tr>
           </thead>
@@ -81,7 +77,6 @@
               class="border-b border-gray-600"
             >
               <td class="py-1">{{ user.userId }}</td>
-              <td class="py-1">{{ user.userName }}</td>
               <td class="py-1">{{ user.role }}</td>
             </tr>
           </tbody>
@@ -103,56 +98,40 @@
 
 <script setup>
 import { ref } from "vue";
-import controller from "../../classes/Controller";
-import { X } from "lucide-vue-next";
-import { stepTrackerService } from "../../services/stepTrackerService";
-import { useRouter } from "vue-router";
-const router = useRouter();
+import controller from "../../../classes/Controller";
+import { stepTrackerService } from "../../../services/stepTrackerService";
+import navigationService from "../../../services/navigationService";
 
-const emit = defineEmits(["cancel"]);
-
-const showForm = ref(false);
 const userId = ref("");
-const userName = ref("");
 const role = ref("");
-
 const userList = ref([]);
-
-function toggleForm() {
-  showForm.value = !showForm.value;
-  if (showForm.value) resetForm();
-}
 
 function resetForm() {
   userId.value = "";
-  userName.value = "";
   role.value = "";
 }
 
 function handleAdd() {
-  if (!userId.value || !userName.value || !role.value) {
-    alert("Please fill all fields.");
-    return;
-  }
+  if (!userId.value || !role.value) return;
 
   userList.value.push({
     userId: userId.value,
-    userName: userName.value,
     role: role.value,
   });
 
   resetForm();
-  showForm.value = false;
 }
 
 function submitAllUsers() {
   controller.addProjectUsers(userList.value);
   stepTrackerService.completeStep(3);
-  emit("next");
-  resetForm();
   userList.value = [];
-  // ✅ Navigate to add-project route
-  router.push("/add-project");
+  resetForm();
+  navigationService.goTo("add-project");
+}
+
+function close() {
+  navigationService.goTo("add-project");
 }
 </script>
 

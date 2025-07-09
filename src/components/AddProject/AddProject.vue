@@ -12,7 +12,7 @@
         <div v-for="step in steps" :key="step.id" class="relative">
           <button
             @click="handleStepClick(step.id)"
-            :disabled="isCompleted(step.id)"
+            :disabled="isDisabled(step.id)"
             :class="buttonClass(step.id)"
           >
             <div class="flex-shrink-0 w-8 h-8 flex items-center justify-center">
@@ -56,30 +56,16 @@
         </div>
       </div>
     </div>
-
-    <!-- Step 0 Modal -->
-    <div
-      v-if="showPopup"
-      class="fixed inset-0 z-50 bg-black bg-opacity-50 flex items-center justify-center"
-    >
-      <ProjectBasicInfoPopup
-        @next="closePopupAndComplete"
-        @cancel="() => (showPopup = false)"
-      />
-    </div>
   </div>
 </template>
 
 <script setup lang="ts">
 import { ref, onMounted, onBeforeUnmount, computed } from "vue";
-import { useRouter } from "vue-router";
-import ProjectBasicInfoPopup from "../components/steps/ProjectBasicInfoPopup.vue";
-import { stepTrackerService } from "../services/stepTrackerService";
+import { stepTrackerService } from "../../services/stepTrackerService";
 import { Subscription } from "rxjs";
-import controller from "../classes/Controller";
+import controller from "../../classes/Controller";
+import navigationService from "../../services/navigationService";
 
-const router = useRouter();
-const showPopup = ref(false);
 const completedSteps = ref(new Set<number>());
 let subscription: Subscription;
 
@@ -102,47 +88,53 @@ onBeforeUnmount(() => {
 
 const isCompleted = (stepId: number) => completedSteps.value.has(stepId);
 
+const isDisabled = (stepId: number) => {
+  if (isCompleted(stepId)) return true;
+  return stepId > 0 && !isCompleted(stepId - 1);
+};
+
 const allStepsCompleted = computed(() => {
-  return steps.every(step => isCompleted(step.id));
+  return steps.every((step) => isCompleted(step.id));
 });
 
 const handleStepClick = (stepId: number) => {
-  if (isCompleted(stepId)) return;
+  if (isDisabled(stepId)) return;
 
   switch (stepId) {
     case 0:
-      showPopup.value = true;
+      navigationService.goTo("project-basic-info-popup");
       break;
     case 1:
-      controller.mapInitialize();
-      router.push("/define-aoi-map");
+      navigationService.goTo("define-aoi-map");
       break;
     case 2:
       controller.buildFinalProject();
-      stepTrackerService.completeStep(2);
-      // router.push("/configure-aoi-watch");
+      stepTrackerService.completeStep(2); // optional pre-completion
       break;
     case 3:
-      router.push("/add-users");
+      navigationService.goTo("add-users");
       break;
   }
 };
 
-const closePopupAndComplete = () => {
-  showPopup.value = false;
-  stepTrackerService.completeStep(0);
-};
-
 const handleSubmit = () => {
-  router.push("/");
+  stepTrackerService.resetSteps(); 
+  navigationService.goTo("home"); 
 };
 
-const buttonClass = (id: number) => [
-  "w-full py-4 px-6 rounded-2xl border font-semibold flex items-center gap-4 transition-all duration-300 shadow-md transform",
-  isCompleted(id)
-    ? "bg-green-500 text-white border-black cursor-not-allowed"
-    : "bg-white hover:bg-gray-50 text-gray-800 border border-gray-200 hover:scale-105 active:scale-95",
-];
+const buttonClass = (id: number) => {
+  const completed = isCompleted(id);
+  const disabled = isDisabled(id);
+
+  return [
+    "w-full py-4 px-6 rounded-2xl border font-semibold flex items-center gap-4 transition-all duration-300 shadow-md transform",
+    completed
+      ? "bg-green-500 text-white border-black cursor-not-allowed"
+      : disabled
+      ? "bg-gray-200 text-gray-500 cursor-not-allowed"
+      : "bg-white hover:bg-gray-50 text-gray-800 border border-gray-200 hover:scale-105 active:scale-95",
+  ];
+};
 
 const badgeClass = (id: number) => [
   "w-6 h-6 rounded-full flex items-center justify-center text-xs font-bold",
@@ -153,8 +145,6 @@ const submitButtonClass = computed(() => [
   "px-12 py-3 rounded-full font-bold text-lg shadow-lg transition-all duration-200 transform",
   allStepsCompleted.value
     ? "bg-gradient-to-b from-green-400 to-green-600 text-white hover:from-green-500 hover:to-green-700 hover:scale-105 active:scale-95 cursor-pointer"
-    : "bg-gray-300 text-gray-500 cursor-not-allowed"
+    : "bg-gray-300 text-gray-500 cursor-not-allowed",
 ]);
 </script>
-
-<style scoped></style>

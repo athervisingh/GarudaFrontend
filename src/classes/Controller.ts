@@ -1,15 +1,14 @@
 // src/classes/Controller.ts
-import User from "./User";
+import User from "../models/User";
 import { ProjectBuilder } from "../builder/ProjectBuilder";
-import { BackendAPI } from "../api/BackendAPI";
-import { Map as GarudaMap } from "./Map";
-import type { Project } from "./Poject";
+import { BackendAPI } from "../services/BackendAPIService";
+
+import type { Project } from "../models/Poject";
 class Controller {
   private isLogin: boolean;
   private currentUser: User | null;
   private currentYear: number;
   private projectBuilder: ProjectBuilder | null = null;
-  public mapInstance: GarudaMap | null = null;
   private currentProject: Project | null = null;
 
   // getCurrentProject(): Project | null {
@@ -104,11 +103,6 @@ class Controller {
     );
 
     this.projectBuilder.addProjectID(projectID);
-  }
-
-  mapInitialize(): void {
-    this.mapInstance = new GarudaMap();
-    console.log("Map instance initialized:", this.mapInstance);
   }
 
   setAOI(name: string, wkt: string): void {

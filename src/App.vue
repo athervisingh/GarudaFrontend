@@ -1,6 +1,6 @@
 <template>
   <div>
-    <!-- Splash -->
+    <!-- 🔵 Splash -->
     <transition name="fade-slide" appear>
       <div
         v-if="showSplash"
@@ -14,17 +14,19 @@
       </div>
     </transition>
 
-    <!-- Main Layout -->
+    <!-- 🔝 Header -->
     <HeaderComponent
       v-if="!showSplash && controller.isUserLoggedIn()"
       :user="controller.getCurrentUser()"
       :showSplash="showSplash"
     />
 
+    <!-- 🔁 Main Content (Dynamic View) -->
     <main>
-      <router-view />
+      <component :is="currentViewComponent" />
     </main>
 
+    <!-- 🔻 Footer -->
     <FooterComponent
       v-if="!showSplash"
       :year="controller.getCurrentYear()"
@@ -34,24 +36,61 @@
 </template>
 
 <script setup lang="ts">
-import { ref, onMounted } from 'vue';
-import { useRouter } from 'vue-router';
-import controller from './classes/Controller';
-import HeaderComponent from './components/HeaderComponent.vue';
-import FooterComponent from './components/FooterComponent.vue';
+import { ref, onMounted ,onBeforeUnmount} from 'vue'
+import { Subscription } from 'rxjs'
+import controller from './classes/Controller'
 
-const showSplash = ref(true);
-const router = useRouter();
+// 🔧 Layout
+import HeaderComponent from './components/HeaderComponent.vue'
+import FooterComponent from './components/FooterComponent.vue'
+
+// 🔧 View Components
+import HomeComponent from './components/HomeComponent.vue'
+import AddProject from './components/AddProject/AddProject.vue'
+import ManageProjects from './components/ManageProject/ManageProject.vue'
+import MonitorProjects from './components/MonitorProject/MonitorProject.vue'
+import ProjectBasicInfoPopup from './components/AddProject/steps/ProjectBasicInfoPopup.vue'
+import DefineAOIMap from './components/AddProject/steps/DefineAOI/DefineAOIMap.vue'
+import AddUser from './components/AddProject/steps/AddUser.vue'
+// 📡 Navigation service
+import navigationService from './services/navigationService'
+import type { ViewKey } from './services/navigationService' // ✅ correct path
+
+// 🔁 View mapping
+
+const viewMap: Record<ViewKey, any> = {
+  home: HomeComponent,
+  'add-project': AddProject,
+  'manage-projects': ManageProjects,
+  'monitor-projects': MonitorProjects,
+  'project-basic-info-popup': ProjectBasicInfoPopup,
+  'define-aoi-map': DefineAOIMap,
+  'add-users': AddUser,
+}
+
+const showSplash = ref(true)
+const currentViewComponent = ref(viewMap['home'])
+
+let navSub: Subscription
+
 
 onMounted(() => {
-  setTimeout(() => {
-    showSplash.value = false;
+  navSub = navigationService.currentView$.subscribe(view => {
+    currentViewComponent.value = viewMap[view] || HomeComponent
+  })
 
+  setTimeout(() => {
+    showSplash.value = false
     if (controller.isUserLoggedIn()) {
-      router.push('/'); // 🔁 Redirect to Home
+      navigationService.goTo('home')
     }
-  }, 2500);
-});
+  }, 2500)
+})
+
+onBeforeUnmount(() => {
+  navSub?.unsubscribe() // ✅ Clean up
+})
+
 </script>
 
 <style scoped>

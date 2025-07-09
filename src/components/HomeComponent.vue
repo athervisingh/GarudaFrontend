@@ -53,6 +53,7 @@
 
       <!-- Monitor Projects Button -->
       <button
+        @click="goToMonitorProjects"
         class="w-full py-3 sm:py-4 px-3 sm:px-4 rounded-xl font-semibold flex items-center justify-start gap-3 sm:gap-4 transition-all duration-300 shadow-md hover:scale-105 active:scale-95 bg-yellow-500 text-white hover:bg-yellow-600 text-sm sm:text-base min-h-[48px] sm:min-h-[56px]"
       >
         <div class="flex-shrink-0 w-6 h-6 sm:w-7 sm:h-7 flex items-center justify-center">
@@ -69,33 +70,35 @@
 </template>
 
 <script setup lang="ts">
-import controller from '../classes/Controller';
-import { ref, onMounted } from "vue";
-import { useRouter } from "vue-router";
+import controller from '../classes/Controller'
+import { ref, onMounted } from 'vue'
+import navigationService from "../services/navigationService" // ✅ Use your service here
 
-
-const router = useRouter();
-const showSplash = ref(true);
+const showSplash = ref(true)
 
 onMounted(() => {
   const isFirstVisit = !localStorage.getItem("visitedGaruda");
   if (isFirstVisit) {
-    localStorage.setItem("visitedGaruda", "true");
+    localStorage.setItem("visitedGaruda", "true")
     setTimeout(() => {
-      showSplash.value = false;
-    }, 2500);
+      showSplash.value = false
+    }, 2500)
   } else {
-    showSplash.value = false;
+    showSplash.value = false
   }
-});
+})
 
 function goToAddProject() {
-  controller.initializeProject(); // ✅ call the method
-  router.push("/add-project");
+  controller.initializeProject()
+  navigationService.goTo('add-project') 
 }
 
 function goToManageProjects() {
-  router.push("/manage-projects");
+  navigationService.goTo('manage-projects')
+}
+
+function goToMonitorProjects() {
+  navigationService.goTo('monitor-projects')
 }
 </script>
 

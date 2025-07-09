@@ -1,6 +1,6 @@
 import { BasicInfo } from "../models/BasicInfo";
 import { AOI } from "../models/AOI";
-import { Project } from "../classes/Poject";
+import { Project } from "../models/Poject";
 
 export class ProjectBuilder {
   _basicInfo?: BasicInfo;

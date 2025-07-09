@@ -10,13 +10,15 @@
 
     <h2 class="text-center text-yellow-300 font-bold text-xl mb-6">Feature Info</h2>
 
+    <!-- Feature Name -->
     <label class="block text-white font-semibold mb-1">Feature Name</label>
     <input
-      v-model="FeatureName"
+      v-model="featureName"
       type="text"
       class="w-full mb-4 px-3 py-2 rounded-md text-black focus:outline-none focus:ring-2 focus:ring-yellow-400 bg-white"
     />
 
+    <!-- Aux Data Fields -->
     <div v-if="extraFields.length > 0" class="mb-4">
       <div
         v-for="(item, index) in extraFields"
@@ -36,6 +38,7 @@
       </div>
     </div>
 
+    <!-- ➕ Add More Fields -->
     <button
       @click="addField"
       class="flex items-center gap-2 text-white font-semibold hover:scale-105 transition-transform mb-5"
@@ -46,6 +49,7 @@
       Add More Fields
     </button>
 
+    <!-- ✅ Submit Button -->
     <button
       @click="submit"
       class="w-full bg-gradient-to-b from-green-400 to-green-600 text-white font-bold py-2 rounded-full hover:scale-105 transition-transform"
@@ -57,11 +61,11 @@
 
 <script setup>
 import { ref } from 'vue'
-import { X } from 'lucide-vue-next' 
+import { X } from 'lucide-vue-next'
 
 const emit = defineEmits(['next', 'cancel'])
 
-const FeatureName = ref('')
+const featureName = ref('')
 const extraFields = ref([])
 
 function addField() {
@@ -69,19 +73,22 @@ function addField() {
 }
 
 function submit() {
-  if (!FeatureName.value.trim()) {
+  if (!featureName.value.trim()) {
     alert('Feature Name is required!')
     return
   }
 
-  const auxData = extraFields.value.reduce((acc, { key, value }) => {
-    if (key.trim()) acc[key] = value
-    return acc
-  }, {})
+  const auxData = {}
+
+  for (const field of extraFields.value) {
+    if (field.key.trim()) {
+      auxData[field.key.trim()] = field.value
+    }
+  }
 
   emit('next', {
-    featureName: FeatureName.value,
-    auxData
+    featureName: featureName.value.trim(),
+    auxData,
   })
 }
 </script>
