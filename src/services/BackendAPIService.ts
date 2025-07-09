@@ -7,7 +7,7 @@ export class BackendAPI {
     console.log("Sending basic info to backend:", basicInfo);
 
     const response = await fetch(
-      "http://localhost:3000/api/basic-info",
+      "https://garudabackend01.onrender.com/api/basic-info",
       {
         method: "POST",
         headers: { "Content-Type": "application/json" },
@@ -26,7 +26,7 @@ export class BackendAPI {
 
   static async submitAOIsAndFetchAOIIDs(aois: AOI[]): Promise<Response> {
     const payload = aois.map((aoi) => aoi.toJSON());
-    return await fetch("http://localhost:3000/api/aois", {
+    return await fetch("https://garudabackend01.onrender.com/api/aois", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify(payload),
@@ -39,7 +39,7 @@ export class BackendAPI {
   ): Promise<void> {
     try {
       const response = await fetch(
-        "http://localhost:3000/api/project-users",
+        "https://garudabackend01.onrender.com/api/project-users",
         {
           method: "POST",
           headers: {
