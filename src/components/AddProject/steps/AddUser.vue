@@ -49,14 +49,14 @@
           </select>
         </div>
 
-        <!-- ➕ Add User Button -->
+        <!-- ➕ Add/Update User Button -->
         <div class="flex justify-center mt-4">
           <button
             @click="handleAdd"
             :disabled="!userId || !role"
             class="w-full lg:w-48 justify-center py-2 rounded-full font-semibold transition-all duration-200 text-white disabled:bg-gray-500 disabled:cursor-not-allowed bg-blue-600 hover:bg-blue-700 hover:scale-105"
           >
-            ➕ Add User
+            {{ editingIndex !== -1 ? '✏️ Update User' : '➕ Add User' }}
           </button>
         </div>
       </div>
@@ -68,6 +68,7 @@
             <tr class="text-yellow-300 border-b border-gray-500">
               <th class="py-1 text-left">UserID</th>
               <th class="py-1 text-left">Role</th>
+              <th class="py-1 text-center">Actions</th>
             </tr>
           </thead>
           <tbody>
@@ -78,6 +79,27 @@
             >
               <td class="py-1">{{ user.userId }}</td>
               <td class="py-1">{{ user.role }}</td>
+              <td class="py-1 text-center">
+                <div class="flex justify-center space-x-2">
+                  <!-- Edit Button -->
+                  <button
+                    @click="editUser(index)"
+                    class="text-blue-400 hover:text-blue-300 transition-colors"
+                    title="Edit User"
+                  >
+                    <Edit class="w-4 h-4" />
+                  </button>
+                  
+                  <!-- Delete Button -->
+                  <button
+                    @click="deleteUser(index)"
+                    class="text-red-400 hover:text-red-300 transition-colors"
+                    title="Delete User"
+                  >
+                    <Trash2 class="w-4 h-4" />
+                  </button>
+                </div>
+              </td>
             </tr>
           </tbody>
         </table>
@@ -98,6 +120,7 @@
 
 <script setup>
 import { ref } from "vue";
+import { Edit, Trash2 } from "lucide-vue-next";
 import controller from "../../../classes/Controller";
 import { stepTrackerService } from "../../../services/stepTrackerService";
 import navigationService from "../../../services/navigationService";
@@ -105,21 +128,50 @@ import navigationService from "../../../services/navigationService";
 const userId = ref("");
 const role = ref("");
 const userList = ref([]);
+const editingIndex = ref(-1);
 
 function resetForm() {
   userId.value = "";
   role.value = "";
+  editingIndex.value = -1;
 }
 
 function handleAdd() {
   if (!userId.value || !role.value) return;
 
-  userList.value.push({
-    userId: userId.value,
-    role: role.value,
-  });
+  if (editingIndex.value !== -1) {
+    // Update existing user
+    userList.value[editingIndex.value] = {
+      userId: userId.value,
+      role: role.value,
+    };
+  } else {
+    // Add new user
+    userList.value.push({
+      userId: userId.value,
+      role: role.value,
+    });
+  }
 
   resetForm();
+}
+
+function editUser(index) {
+  const user = userList.value[index];
+  userId.value = user.userId;
+  role.value = user.role;
+  editingIndex.value = index;
+}
+
+function deleteUser(index) {
+  userList.value.splice(index, 1);
+  // If we're editing the user being deleted, reset the form
+  if (editingIndex.value === index) {
+    resetForm();
+  } else if (editingIndex.value > index) {
+    // Adjust editing index if a user before the editing user was deleted
+    editingIndex.value--;
+  }
 }
 
 function submitAllUsers() {

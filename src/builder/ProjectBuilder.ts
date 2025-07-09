@@ -29,7 +29,12 @@ export class ProjectBuilder {
     }
     return this._basicInfo.toJSON();
   }
-
+  getProjectName(): string {
+    if (!this._basicInfo) {
+      throw new Error("Basic info not set. Call addBasicInfo() first.");
+    }
+    return this._basicInfo.getProjectName();
+  }
   getProjectID(): string {
     if (!this._basicInfo) {
       throw new Error("Basic info not set. Call addBasicInfo() first.");

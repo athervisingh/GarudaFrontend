@@ -2,7 +2,7 @@
 import User from "../models/User";
 import { ProjectBuilder } from "../builder/ProjectBuilder";
 import { BackendAPI } from "../services/BackendAPIService";
-
+import type { UserProject } from "../models/UserProjectsList";
 import type { Project } from "../models/Poject";
 class Controller {
   private isLogin: boolean;
@@ -10,6 +10,8 @@ class Controller {
   private currentYear: number;
   private projectBuilder: ProjectBuilder | null = null;
   private currentProject: Project | null = null;
+  private userProjects: UserProject[] = [];
+  private monitoredProjects: UserProject[] = [];
 
   // getCurrentProject(): Project | null {
   //   return this.currentProject;
@@ -33,6 +35,8 @@ class Controller {
     user.setClaim("owner");
 
     this.currentUser = user;
+    this.getUserManageableProjects();
+    this.getUserMonitoredProjects();
   }
 
   isUserLoggedIn(): boolean {
@@ -55,7 +59,12 @@ class Controller {
   getCurrentYear(): number {
     return this.currentYear;
   }
-
+  getUserProjects(): UserProject[] {
+    return this.userProjects
+  }
+ getMonitoredProjects(): UserProject[] {
+    return this.monitoredProjects;
+  }
   // Project Initialization
 
   initializeProject(): void {
@@ -139,24 +148,64 @@ class Controller {
   }
 
   // Inside Controller.ts
-async addProjectUsers(users: { userId: string; userName: string; role: string }[]): Promise<void> {
+  async addProjectUsers(
+    users: { userId: string; userName: string; role: string }[]
+  ): Promise<void> {
     if (!this.currentProject) {
       throw new Error("Current project not initialized.");
     }
-    if(!this.projectBuilder) {
+    if (!this.projectBuilder) {
       throw new Error("ProjectBuilder not initialized.");
     }
-const projectId = this.projectBuilder.getProjectID();
-    users.forEach(user => {
-      this.currentProject!.setProjectUsers(user.userId, user.userName, user.role);
-    });
-     await BackendAPI.submitProjectUsers(users, projectId);
+    const projectId = this.projectBuilder.getProjectID();
+    const projectName = this.projectBuilder.getProjectName();
 
-    
+    users.forEach((user) => {
+      this.currentProject!.setProjectUsers(
+        user.userId,
+        user.userName,
+        user.role
+      );
+    });
+    await BackendAPI.submitProjectUsers(users, projectId, projectName);
+  }
+
+  getUserManageableProjects() {
+    if (!this.currentUser) {
+      console.warn("⚠️ User not logged in.");
+      return;
+    }
+
+    const userId = this.currentUser.getUserID(); // ✅ use getter
+
+    BackendAPI.fetchUserManagableProject(userId)
+      .then((projects: UserProject[]) => {
+        this.userProjects = projects;
+        console.log("✅ Manageable projects fetched:", this.userProjects);
+      })
+      .catch((error: unknown) => {
+        console.error("❌ Failed to fetch manageable projects:", error);
+      });
+  }
+
+    getUserMonitoredProjects() {
+    if (!this.currentUser) {
+      console.warn("⚠️ User not logged in.");
+      return;
+    }
+
+    const userId = this.currentUser.getUserID(); // ✅ use getter
+
+    BackendAPI.fetchUserMonitoredProject(userId)
+      .then((projects: UserProject[]) => {
+        this.monitoredProjects = projects;
+        console.log("✅ Monitored projects fetched:", this.monitoredProjects);
+      })
+      .catch((error: unknown) => {
+        console.error("❌ Failed to fetch monitored projects:", error);
+      });
   }
 }
-
-
 
 const controller = new Controller();
 controller.init();
