@@ -79,7 +79,7 @@ import DefineAOIPopup from "./AOIDetails/DefineAOIPopup.vue";
 import controller from "../../../../classes/Controller";
 import navigationService from "../../../../services/navigationService";
 import { stepTrackerService } from "../../../../services/stepTrackerService";
-import { Pencil, Trash2, Edit } from "lucide-vue-next";
+import { Pencil, Trash2 } from "lucide-vue-next";
 
 const mapContainer = ref<HTMLDivElement | null>(null);
 const showPopup = ref(false);
