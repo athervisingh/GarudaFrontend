@@ -1,8 +1,8 @@
 import type { AOI } from "../models/AOI"
 
 // 🔗 URLs
-const localURL = "http://localhost:3000"
-// const remoteURL = "https://garudabackend01.onrender.com"
+// const localURL = "http://localhost:3000"
+const remoteURL = "https://garudabackend01.onrender.com"
 
 export class BackendAPI {
   static async submitBasicInfoAndFetchProjectID(
@@ -10,7 +10,7 @@ export class BackendAPI {
   ): Promise<{ projectID: string }> {
     console.log("Sending basic info to backend:", basicInfo)
 
-    const response = await fetch(`${localURL}/api/basic-info`, {
+    const response = await fetch(`${remoteURL}/api/basic-info`, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify(basicInfo),
@@ -27,7 +27,7 @@ export class BackendAPI {
 
   static async submitAOIsAndFetchAOIIDs(aois: AOI[]): Promise<Response> {
     const payload = aois.map((aoi) => aoi.toJSON())
-    return await fetch(`${localURL}/api/aois`, {
+    return await fetch(`${remoteURL}/api/aois`, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify(payload),
@@ -40,7 +40,7 @@ export class BackendAPI {
     projectName: string
   ): Promise<void> {
     try {
-      const response = await fetch(`${localURL}/api/project-users`, {
+      const response = await fetch(`${remoteURL}/api/project-users`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -68,7 +68,7 @@ export class BackendAPI {
     userId: string
   ): Promise<{ projectID: string; projectName: string; role: string }[]> {
     try {
-      const response = await fetch(`${localURL}/api/user-projects?userId=${userId}`)
+      const response = await fetch(`${remoteURL}/api/user-projects?userId=${userId}`)
 
       if (!response.ok) {
         const error = await response.text()
@@ -87,7 +87,7 @@ export class BackendAPI {
     userId: string
   ): Promise<{ projectID: string; projectName: string; role: string }[]> {
     try {
-      const response = await fetch(`${localURL}/api/monitored-projects?userId=${userId}`)
+      const response = await fetch(`${remoteURL}/api/monitored-projects?userId=${userId}`)
 
       if (!response.ok) {
         const error = await response.text()
