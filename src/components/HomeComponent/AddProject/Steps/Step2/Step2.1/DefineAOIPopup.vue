@@ -7,17 +7,18 @@
     >
       <X class="w-6 h-6" />
     </button>
-
+    
     <h2 class="text-center text-yellow-300 font-bold text-xl mb-6">Feature Info</h2>
-
+    
     <!-- Feature Name -->
     <label class="block text-white font-semibold mb-1">Feature Name</label>
     <input
       v-model="featureName"
       type="text"
-      class="w-full mb-4 px-3 py-2 rounded-md text-black focus:outline-none focus:ring-2 focus:ring-yellow-400 bg-white"
+      placeholder="Enter feature name"
+      class="w-full mb-4 px-3 py-2 rounded-md text-black focus:outline-none focus:ring-2 focus:ring-yellow-400 bg-white placeholder-gray-400"
     />
-
+    
     <!-- Aux Data Fields -->
     <div v-if="extraFields.length > 0" class="mb-4">
       <div
@@ -27,17 +28,17 @@
       >
         <input
           v-model="item.key"
-          placeholder="Field name"
-          class="w-1/2 px-3 py-2 rounded-md text-black bg-white focus:outline-none focus:ring-2 focus:ring-blue-400"
+          placeholder="Enter field name"
+          class="w-1/2 px-3 py-2 rounded-md text-black bg-white focus:outline-none focus:ring-2 focus:ring-blue-400 placeholder-gray-400"
         />
         <input
           v-model="item.value"
-          placeholder="Value"
-          class="w-1/2 px-3 py-2 rounded-md text-black bg-white focus:outline-none focus:ring-2 focus:ring-blue-400"
+          placeholder="Enter field value"
+          class="w-1/2 px-3 py-2 rounded-md text-black bg-white focus:outline-none focus:ring-2 focus:ring-blue-400 placeholder-gray-400"
         />
       </div>
     </div>
-
+    
     <!-- ➕ Add More Fields -->
     <button
       @click="addField"
@@ -48,7 +49,7 @@
       </div>
       Add More Fields
     </button>
-
+    
     <!-- ✅ Submit Button -->
     <button
       @click="submit"
@@ -64,11 +65,19 @@ import { ref } from 'vue'
 import { X } from 'lucide-vue-next'
 
 const emit = defineEmits(['next', 'cancel'])
-
 const featureName = ref('')
 const extraFields = ref([])
 
 function addField() {
+  // Check if previous fields are filled before adding new one
+  if (extraFields.value.length > 0) {
+    const lastField = extraFields.value[extraFields.value.length - 1]
+    if (!lastField.key.trim() || !lastField.value.trim()) {
+      alert('Please fill both field name and value before adding a new field!')
+      return
+    }
+  }
+  
   extraFields.value.push({ key: '', value: '' })
 }
 
@@ -78,10 +87,22 @@ function submit() {
     return
   }
 
-  const auxData = {}
+  // Validate extra fields - if key is provided, value must also be provided
+  for (let i = 0; i < extraFields.value.length; i++) {
+    const field = extraFields.value[i]
+    if (field.key.trim() && !field.value.trim()) {
+      alert(`Please enter a value for field: "${field.key}"`)
+      return
+    }
+    if (!field.key.trim() && field.value.trim()) {
+      alert(`Please enter a field name for value: "${field.value}"`)
+      return
+    }
+  }
 
+  const auxData = {}
   for (const field of extraFields.value) {
-    if (field.key.trim()) {
+    if (field.key.trim() && field.value.trim()) {
       auxData[field.key.trim()] = field.value
     }
   }

@@ -15,6 +15,12 @@ export class Project {
   setProjectUsers(userId: string, userName: string, role: string): void {
     this.projectUsers.push({ userId, userName, role });
   }
+  getProjectID(): string {
+    return this.basicInfo?.getProjectID() || "";
+  }
+  getProjectName(): string {
+    return this.basicInfo?.getProjectName() || "";
+  }
   toJSON(): Record<string, any> {
     return {
       basicInfo: this.basicInfo?.toJSON(),

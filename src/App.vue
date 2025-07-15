@@ -1,18 +1,7 @@
 <template>
   <div>
     <!-- 🔵 Splash -->
-    <transition name="fade-slide" appear>
-      <div
-        v-if="showSplash"
-        class="fixed inset-0 z-50 flex items-center justify-center bg-white"
-      >
-        <img
-          src="/images/logo.png"
-          alt="Garuda Logo"
-          class="h-32 w-32 sm:h-40 sm:w-40 animate-spin-slow rounded-full ring-4 ring-blue-500 ring-offset-2 ring-offset-white shadow-xl"
-        />
-      </div>
-    </transition>
+    <SplashScreen v-if="showSplash" @finish="showSplash = false" />
 
     <!-- 🔝 Header -->
     <HeaderComponent
@@ -21,7 +10,7 @@
       :showSplash="showSplash"
     />
 
-    <!-- 🔁 Main Content (Dynamic View) -->
+    <!-- 🔁 Main Content -->
     <main>
       <component :is="currentViewComponent" />
     </main>
@@ -36,27 +25,27 @@
 </template>
 
 <script setup lang="ts">
-import { ref, onMounted ,onBeforeUnmount} from 'vue'
+import { ref, onMounted, onBeforeUnmount } from 'vue'
 import { Subscription } from 'rxjs'
 import controller from './classes/Controller'
+import SplashScreen from './components/SplashScreen/SplashScreen.vue'
 
 // 🔧 Layout
-import HeaderComponent from './components/HeaderComponent.vue'
-import FooterComponent from './components/FooterComponent.vue'
+import HeaderComponent from './components/HeaderComponent/HeaderComponent.vue'
+import FooterComponent from './components/FooterComponent/FooterComponent.vue'
 
 // 🔧 View Components
-import HomeComponent from './components/HomeComponent.vue'
-import AddProject from './components/AddProject/AddProject.vue'
-import ManageProjects from './components/ManageProject/ManageProject.vue'
-import MonitorProjects from './components/MonitorProject/MonitorProject.vue'
-import ProjectBasicInfoPopup from './components/AddProject/steps/ProjectBasicInfoPopup.vue'
-import DefineAOIMap from './components/AddProject/steps/DefineAOI/DefineAOIMap.vue'
-import AddUser from './components/AddProject/steps/AddUser.vue'
+import HomeComponent from './components/HomeComponent/HomeComponent.vue'
+import AddProject from './components/HomeComponent/AddProject/AddProject.vue'
+import ManageProjects from './components/HomeComponent/ManageProject/ManageProject.vue'
+import MonitorProjects from './components/HomeComponent/MonitorProject/MonitorProject.vue'
+import ProjectBasicInfoPopup from './components/HomeComponent/AddProject/Steps/Step1/ProjectBasicInfoPopup.vue'
+import DefineAOIMap from './components/HomeComponent/AddProject/Steps/Step2/DefineAOIMap.vue'
+import AddUser from './components/HomeComponent/AddProject/Steps/Step4/AddUser.vue'
+
 // 📡 Navigation service
 import navigationService from './services/navigationService'
-import type { ViewKey } from './services/navigationService' // ✅ correct path
-
-// 🔁 View mapping
+import type { ViewKey } from './services/navigationService'
 
 const viewMap: Record<ViewKey, any> = {
   home: HomeComponent,
@@ -73,47 +62,17 @@ const currentViewComponent = ref(viewMap['home'])
 
 let navSub: Subscription
 
-
 onMounted(() => {
   navSub = navigationService.currentView$.subscribe(view => {
     currentViewComponent.value = viewMap[view] || HomeComponent
   })
-
-  setTimeout(() => {
-    showSplash.value = false
-    if (controller.isUserLoggedIn()) {
-      navigationService.goTo('home')
-    }
-  }, 2500)
 })
 
 onBeforeUnmount(() => {
-  navSub?.unsubscribe() // ✅ Clean up
+  navSub?.unsubscribe()
 })
-
 </script>
 
 <style scoped>
-.fade-slide-enter-active,
-.fade-slide-leave-active {
-  transition: opacity 0.8s, transform 0.8s;
-}
-.fade-slide-enter-from,
-.fade-slide-leave-to {
-  opacity: 0;
-  transform: scale(1.2);
-}
-
-@keyframes spin-slow {
-  from {
-    transform: rotate(0deg);
-  }
-  to {
-    transform: rotate(360deg);
-  }
-}
-
-.animate-spin-slow {
-  animation: spin-slow 3s linear infinite;
-}
+/* App.vue me ab koi splash-related style ki jarurat nahi */
 </style>

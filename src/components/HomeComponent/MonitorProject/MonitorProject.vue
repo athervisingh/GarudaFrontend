@@ -1,7 +1,7 @@
 <template>
   <div class="manage-container">
     <!-- Full-width Heading -->
-    <div class="heading">Manage Projects</div>
+    <div class="heading">Monitor Projects</div>
 
     <!-- Search Box -->
     <div class="search-box">
@@ -48,15 +48,28 @@
 </template>
 
 <script setup lang="ts">
-import { ref, computed } from "vue";
-import controller from "../../classes/Controller";
-import type { UserProject } from "../../models/UserProjectsList";
+import { ref, computed, onMounted, onBeforeUnmount } from "vue";
+import { projectListService } from "../../../services/ProjectListService";
+import type { UserProject } from "../../../models/UserProjectsList";
+import { Subscription } from "rxjs";
 
 const searchQuery = ref("");
-const allProjects = computed<UserProject[]>(() => controller.getUserProjects());
+const monitoredProjects = ref<UserProject[]>([]);
+
+let sub: Subscription;
+
+onMounted(() => {
+  sub = projectListService.monitoredProjects$.subscribe((projects) => {
+    monitoredProjects.value = projects;
+  });
+});
+
+onBeforeUnmount(() => {
+  sub?.unsubscribe();
+});
 
 const filteredProjects = computed(() =>
-  allProjects.value.filter((project) => {
+  monitoredProjects.value.filter((project) => {
     const query = searchQuery.value.trim().toLowerCase();
     return (
       project.projectName.toLowerCase().includes(query) ||
@@ -67,15 +80,16 @@ const filteredProjects = computed(() =>
 
 function handleProjectClick(project: UserProject) {
   console.log("🔍 Selected Project:", project.projectID);
-  // Future navigation/modal can go here
+  // Future: navigationService.goToProject(project.projectID)
 }
 </script>
+
 
 <style scoped>
 .manage-container {
   min-height: 100vh;
   background-color: #f2f3f8;
-  padding-top: 5rem;
+  padding-top: 4rem;
   padding-bottom: 1rem;
 }
 
@@ -85,7 +99,7 @@ function handleProjectClick(project: UserProject) {
   text-align: center;
   font-weight: bold;
   font-size: 1.25rem;
-  background-color: #c2410c;
+  background-color: #c09201;
   color: white;
   padding: 0.5rem;
   box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);

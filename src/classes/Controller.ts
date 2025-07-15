@@ -4,18 +4,15 @@ import { ProjectBuilder } from "../builder/ProjectBuilder";
 import { BackendAPI } from "../services/BackendAPIService";
 import type { UserProject } from "../models/UserProjectsList";
 import type { Project } from "../models/Poject";
+import { projectListService } from "../services/ProjectListService";
 class Controller {
   private isLogin: boolean;
   private currentUser: User | null;
   private currentYear: number;
   private projectBuilder: ProjectBuilder | null = null;
   private currentProject: Project | null = null;
-  private userProjects: UserProject[] = [];
+  private managedProjects: UserProject[] = [];
   private monitoredProjects: UserProject[] = [];
-
-  // getCurrentProject(): Project | null {
-  //   return this.currentProject;
-  // }
 
   constructor() {
     this.isLogin = false;
@@ -59,10 +56,10 @@ class Controller {
   getCurrentYear(): number {
     return this.currentYear;
   }
-  getUserProjects(): UserProject[] {
-    return this.userProjects
+  getManagedProjects(): UserProject[] {
+    return this.managedProjects;
   }
- getMonitoredProjects(): UserProject[] {
+  getMonitoredProjects(): UserProject[] {
     return this.monitoredProjects;
   }
   // Project Initialization
@@ -180,15 +177,16 @@ class Controller {
 
     BackendAPI.fetchUserManagableProject(userId)
       .then((projects: UserProject[]) => {
-        this.userProjects = projects;
-        console.log("✅ Manageable projects fetched:", this.userProjects);
+        this.managedProjects = projects;
+         projectListService.updateManagedProjectsFromController(projects);
+        console.log("✅ Manageable projects fetched:", this.managedProjects);
       })
       .catch((error: unknown) => {
         console.error("❌ Failed to fetch manageable projects:", error);
       });
   }
 
-    getUserMonitoredProjects() {
+  getUserMonitoredProjects() {
     if (!this.currentUser) {
       console.warn("⚠️ User not logged in.");
       return;
@@ -199,11 +197,30 @@ class Controller {
     BackendAPI.fetchUserMonitoredProject(userId)
       .then((projects: UserProject[]) => {
         this.monitoredProjects = projects;
+        projectListService.updateMonitoredProjectsFromController(projects);
         console.log("✅ Monitored projects fetched:", this.monitoredProjects);
       })
       .catch((error: unknown) => {
         console.error("❌ Failed to fetch monitored projects:", error);
       });
+  }
+
+  getCurrentProject(): Project | null {
+    return this.currentProject;
+  }
+
+  addManagedProject(project: UserProject) {
+    const exists = this.managedProjects.some(
+      (p) => p.projectID === project.projectID
+    );
+    if (!exists) this.managedProjects.push(project);
+  }
+
+  addMonitoredProject(project: UserProject) {
+    const exists = this.monitoredProjects.some(
+      (p) => p.projectID === project.projectID
+    );
+    if (!exists) this.monitoredProjects.push(project);
   }
 }
 

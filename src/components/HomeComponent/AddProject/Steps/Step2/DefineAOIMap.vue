@@ -43,7 +43,7 @@
     </div>
 
     <!-- AOI Banner -->
-    <div class="absolute top-10 w-screen h-[7vh] bg-[#314157] z-40">
+    <div class="absolute top-13 w-screen h-[7vh] bg-[#314157] z-40">
       <div class="flex items-center justify-center h-full">
         <h1 class="text-white text-2xl font-bold">Define AOI</h1>
       </div>
@@ -54,7 +54,7 @@
       v-if="showPopup"
       class="absolute inset-0 flex justify-center items-center z-[1000] bg-black/60 backdrop-blur-sm"
     >
-      <DefineAOIPopup @next="onPopupSubmit" @cancel="showPopup = false" />
+      <DefineAOIPopup @next="onPopupSubmit" @cancel="onPopupCancel" />
     </div>
   </div>
 </template>
@@ -75,10 +75,10 @@ import Polygon from "ol/geom/Polygon";
 import Feature from "ol/Feature";
 import WKT from "ol/format/WKT";
 import Overlay from "ol/Overlay";
-import DefineAOIPopup from "./AOIDetails/DefineAOIPopup.vue";
-import controller from "../../../../classes/Controller";
-import navigationService from "../../../../services/navigationService";
-import { stepTrackerService } from "../../../../services/stepTrackerService";
+import DefineAOIPopup from "./Step2.1/DefineAOIPopup.vue";
+import controller from "../../../../../classes/Controller";
+import navigationService from "../../../../../services/navigationService";
+import { stepTrackerService } from "../../../../../services/stepTrackerService";
 import { Pencil, Trash2 } from "lucide-vue-next";
 
 const mapContainer = ref<HTMLDivElement | null>(null);
@@ -287,6 +287,20 @@ function onPopupSubmit(data: { featureName: string; auxData: Record<string, any>
     createAOIOverlay(aoi);
   }
 
+  // Clear the latest feature and geometry references
+  latestFeature.value = null;
+  latestGeometry.value = null;
+}
+
+function onPopupCancel() {
+  showPopup.value = false;
+  
+  // Remove the drawn feature from the map if it exists
+  if (latestFeature.value) {
+    drawSource.removeFeature(latestFeature.value as Feature<Polygon>);
+  }
+  
+  // Clear the latest feature and geometry references
   latestFeature.value = null;
   latestGeometry.value = null;
 }

@@ -1,33 +1,37 @@
-import type { AOI } from "../models/AOI";
+import type { AOI } from "../models/AOI"
+
+// 🔗 URLs
+const localURL = "http://localhost:3000"
+// const remoteURL = "https://garudabackend01.onrender.com"
 
 export class BackendAPI {
   static async submitBasicInfoAndFetchProjectID(
     basicInfo: object
   ): Promise<{ projectID: string }> {
-    console.log("Sending basic info to backend:", basicInfo);
+    console.log("Sending basic info to backend:", basicInfo)
 
-    const response = await fetch("https://garudabackend01.onrender.com/api/basic-info", {
+    const response = await fetch(`${localURL}/api/basic-info`, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify(basicInfo),
-    });
+    })
 
     if (!response.ok) {
-      const error = await response.text();
-      throw new Error(`ProjectID fetch failed: ${error}`);
+      const error = await response.text()
+      throw new Error(`ProjectID fetch failed: ${error}`)
     }
 
-    const data = await response.json();
-    return data;
+    const data = await response.json()
+    return data
   }
 
   static async submitAOIsAndFetchAOIIDs(aois: AOI[]): Promise<Response> {
-    const payload = aois.map((aoi) => aoi.toJSON());
-    return await fetch("https://garudabackend01.onrender.com/api/aois", {
+    const payload = aois.map((aoi) => aoi.toJSON())
+    return await fetch(`${localURL}/api/aois`, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify(payload),
-    });
+    })
   }
 
   static async submitProjectUsers(
@@ -36,27 +40,27 @@ export class BackendAPI {
     projectName: string
   ): Promise<void> {
     try {
-      const response = await fetch("https://garudabackend01.onrender.com/api/project-users", {
+      const response = await fetch(`${localURL}/api/project-users`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
         },
         body: JSON.stringify({
           projectId,
-          projectName, // ✅ now included
+          projectName,
           users,
         }),
-      });
+      })
 
       if (!response.ok) {
-        const error = await response.json();
-        throw new Error(error.message || "Failed to submit users");
+        const error = await response.json()
+        throw new Error(error.message || "Failed to submit users")
       }
 
-      console.log("✅ Users submitted successfully.");
+      console.log("✅ Users submitted successfully.")
     } catch (err) {
-      console.error("❌ Error submitting users:", err);
-      throw err;
+      console.error("❌ Error submitting users:", err)
+      throw err
     }
   }
 
@@ -64,20 +68,18 @@ export class BackendAPI {
     userId: string
   ): Promise<{ projectID: string; projectName: string; role: string }[]> {
     try {
-      const response = await fetch(
-        `https://garudabackend01.onrender.com/api/user-projects?userId=${userId}`
-      );
+      const response = await fetch(`${localURL}/api/user-projects?userId=${userId}`)
 
       if (!response.ok) {
-        const error = await response.text();
-        throw new Error(`Failed to fetch user projects: ${error}`);
+        const error = await response.text()
+        throw new Error(`Failed to fetch user projects: ${error}`)
       }
 
-      const projects = await response.json();
-      return projects;
+      const projects = await response.json()
+      return projects
     } catch (err) {
-      console.error("❌ Error fetching user projects:", err);
-      throw err;
+      console.error("❌ Error fetching user projects:", err)
+      throw err
     }
   }
 
@@ -85,20 +87,18 @@ export class BackendAPI {
     userId: string
   ): Promise<{ projectID: string; projectName: string; role: string }[]> {
     try {
-      const response = await fetch(
-        `https://garudabackend01.onrender.com/api/monitored-projects?userId=${userId}`
-      );
+      const response = await fetch(`${localURL}/api/monitored-projects?userId=${userId}`)
 
       if (!response.ok) {
-        const error = await response.text();
-        throw new Error(`Failed to fetch user projects: ${error}`);
+        const error = await response.text()
+        throw new Error(`Failed to fetch user projects: ${error}`)
       }
 
-      const projects = await response.json();
-      return projects;
+      const projects = await response.json()
+      return projects
     } catch (err) {
-      console.error("❌ Error fetching user projects:", err);
-      throw err;
+      console.error("❌ Error fetching user projects:", err)
+      throw err
     }
   }
 }
