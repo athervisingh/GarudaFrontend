@@ -21,24 +21,69 @@ class Controller {
   }
 
   init(): void {
-    this.isLogin = true;
-
-    const user = new User(
-      "U001",
-      "Athervi Singh",
-      "athervi@example.com",
-      "/images/profile.jpg"
-    );
-    user.setClaim("owner");
-
-    this.currentUser = user;
-    this.getUserManageableProjects();
-    this.getUserMonitoredProjects();
+    // this.isLogin = true;
+    // const user = new User(
+    //   "U001",
+    //   "Athervi Singh",
+    //   "athervi@example.com",
+    //   "/images/profile.jpg"
+    // );
+    // user.setClaim("owner");
+    // this.currentUser = user;
+    // this.getUserManageableProjects();
+    // this.getUserMonitoredProjects();
   }
 
   isUserLoggedIn(): boolean {
     return this.isLogin;
   }
+  
+  async login(username: string, password: string): Promise<boolean> {
+    try {
+      const res = await fetch("http://localhost:3000/api/login", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ username, password }),
+      });
+
+      const data = await res.json();
+
+      if (data.success) {
+        const user = new User(
+          data.user.user_id,
+          data.user.username,
+          data.user.email,
+          data.user.profile_picture || "/images/profile.jpg"
+        );
+
+        user.setClaim("owner"); // agar role ka logic hai
+
+        this.isLogin = true;
+        this.currentUser = user;
+        document.title = `Welcome ${data.user.username}`;
+        // ye do line sirf successful login ke baad hi fetch kare
+        this.getUserManageableProjects();
+        this.getUserMonitoredProjects();
+
+        return true;
+      } else {
+        return false;
+      }
+    } catch (err) {
+      console.error("❌ Login error:", err);
+      return false;
+    }
+  }
+
+  logout(): void {
+  this.isLogin = false;
+  this.currentUser = null;
+  this.currentProject = null;
+  this.managedProjects = [];
+  this.monitoredProjects = [];
+  document.title = "Logged Out"; // optional
+  console.log("✅ User logged out successfully");
+}
 
   getCurrentUser(): User | null {
     return this.currentUser;
@@ -178,7 +223,7 @@ class Controller {
     BackendAPI.fetchUserManagableProject(userId)
       .then((projects: UserProject[]) => {
         this.managedProjects = projects;
-         projectListService.updateManagedProjectsFromController(projects);
+        projectListService.updateManagedProjectsFromController(projects);
         console.log("✅ Manageable projects fetched:", this.managedProjects);
       })
       .catch((error: unknown) => {

@@ -1,6 +1,7 @@
 import { BehaviorSubject } from 'rxjs'
 
 type ViewKey =
+  | 'login'
   | 'home'
   | 'add-project'
   | 'manage-projects'
@@ -9,7 +10,7 @@ type ViewKey =
   | 'define-aoi-map'
   | 'add-users'
 
-const currentView$ = new BehaviorSubject<ViewKey>('home')
+const currentView$ = new BehaviorSubject<ViewKey>('login')
 
 // ✅ Add history stack
 const historyStack: ViewKey[] = []

@@ -2,7 +2,7 @@ import type { AOI } from "../models/AOI"
 
 // 🔗 URLs
 // const localURL = "http://localhost:3000"
-const remoteURL = "https://garudabackend01.onrender.com"
+const remoteURL = "http://localhost:3000"
 
 export class BackendAPI {
   static async submitBasicInfoAndFetchProjectID(
